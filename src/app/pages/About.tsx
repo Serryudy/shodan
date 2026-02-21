@@ -146,20 +146,20 @@ export function About() {
             className="grid grid-cols-2 gap-6"
           >
             <GlowCard glowColor="orange" className="text-center">
-              <div className="text-4xl mb-2 text-[#FF6A00]">50K+</div>
-              <div className="text-sm text-[#F5F5F5]/60">Developers</div>
+              <div className="text-4xl mb-2 text-[#FF6A00]">5</div>
+              <div className="text-sm text-[#F5F5F5]/60">Active Products</div>
             </GlowCard>
             <GlowCard glowColor="teal" className="text-center">
-              <div className="text-4xl mb-2 text-[#00B3B3]">100+</div>
-              <div className="text-sm text-[#F5F5F5]/60">Open Source Projects</div>
+              <div className="text-4xl mb-2 text-[#00B3B3]">9</div>
+              <div className="text-sm text-[#F5F5F5]/60">Team Members</div>
             </GlowCard>
             <GlowCard glowColor="teal" className="text-center">
-              <div className="text-4xl mb-2 text-[#00B3B3]">1.5M</div>
-              <div className="text-sm text-[#F5F5F5]/60">GitHub Stars</div>
+              <div className="text-4xl mb-2 text-[#00B3B3]">100%</div>
+              <div className="text-sm text-[#F5F5F5]/60">Open Source</div>
             </GlowCard>
             <GlowCard glowColor="orange" className="text-center">
-              <div className="text-4xl mb-2 text-[#FF6A00]">40+</div>
-              <div className="text-sm text-[#F5F5F5]/60">Countries</div>
+              <div className="text-4xl mb-2 text-[#FF6A00]">2024</div>
+              <div className="text-sm text-[#F5F5F5]/60">Founded</div>
             </GlowCard>
           </motion.div>
         </div>
