@@ -3,7 +3,7 @@ import { Section, SectionHeader } from '../components/Section';
 import { GlowCard } from '../components/Card';
 import { Button } from '../components/Button';
 import { Link } from 'react-router';
-import { Brain, Code2, Workflow, ArrowRight, CheckCircle, Sparkles, Zap, Camera, TrendingUp } from 'lucide-react';
+import { Brain, Code2, Workflow, ArrowRight, CheckCircle, Sparkles, Zap, Camera, TrendingUp, Rocket } from 'lucide-react';
 import { StaggerGrid, StaggerContainer, StaggerItem } from '../components/StaggerContainer';
 
 export function Solutions() {
@@ -44,8 +44,9 @@ export function Solutions() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <div className="inline-block mb-6 px-4 py-2 rounded-full border border-[#FF6A00]/30 bg-[#FF6A00]/10">
-              <span className="text-sm text-[#FF6A00]">🚀 Solutions</span>
+            <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full border border-[#FF6A00]/30 bg-[#FF6A00]/10">
+              <Rocket className="w-4 h-4 text-[#FF6A00]" />
+              <span className="text-sm text-[#FF6A00]">Solutions</span>
             </div>
             <h1 className="text-5xl md:text-7xl mb-6 leading-tight">
               <span className="block bg-gradient-to-r from-[#FF6A00] via-[#00B3B3] to-[#FF6A00] bg-clip-text text-transparent">

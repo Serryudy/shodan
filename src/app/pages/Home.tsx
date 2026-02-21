@@ -18,7 +18,8 @@ import {
   Camera,
   Palette,
   Mic,
-  TrendingUp
+  TrendingUp,
+  Heart
 } from 'lucide-react';
 
 // ─── Cinematic easing (matches animations.ts catalogue) ──────────────────────
@@ -272,7 +273,7 @@ export function Home() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.7, delay: 0.15, ease: QUART_OUT }}
             >
-              <span className="text-sm text-[#00B3B3]">🚀 Building the Future</span>
+              <span className="inline-flex items-center gap-2 text-sm text-[#00B3B3]"><Rocket className="w-4 h-4" /> Building the Future</span>
             </motion.div>
 
             {/* Headline — each line clips up from below */}
@@ -536,8 +537,9 @@ export function Home() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <div className="inline-block mb-4 px-4 py-2 rounded-full border border-[#00B3B3]/30 bg-[#00B3B3]/10">
-              <span className="text-sm text-[#00B3B3]">💚 Open Source</span>
+            <div className="inline-flex items-center gap-2 mb-4 px-4 py-2 rounded-full border border-[#00B3B3]/30 bg-[#00B3B3]/10">
+              <Heart className="w-4 h-4 text-[#00B3B3]" />
+              <span className="text-sm text-[#00B3B3]">Open Source</span>
             </div>
             <h2 className="text-4xl md:text-5xl mb-6 text-[#F5F5F5]">
               Built by the community,

@@ -17,8 +17,9 @@ export function SolutionsAutomation() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <div className="inline-block mb-6 px-4 py-2 rounded-full border border-[#FF6A00]/30 bg-[#FF6A00]/10">
-              <span className="text-sm text-[#FF6A00]">📈 Algorithmic Trading</span>
+            <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full border border-[#FF6A00]/30 bg-[#FF6A00]/10">
+              <TrendingUp className="w-4 h-4 text-[#FF6A00]" />
+              <span className="text-sm text-[#FF6A00]">Algorithmic Trading</span>
             </div>
             <h1 className="text-5xl md:text-6xl mb-6 leading-tight">
               <span className="block bg-gradient-to-r from-[#FF6A00] via-[#00B3B3] to-[#FF6A00] bg-clip-text text-transparent">

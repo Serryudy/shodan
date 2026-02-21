@@ -17,8 +17,9 @@ export function SolutionsSoftware() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <div className="inline-block mb-6 px-4 py-2 rounded-full border border-[#00B3B3]/30 bg-[#00B3B3]/10">
-              <span className="text-sm text-[#00B3B3]">🎥 Creative Software</span>
+            <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full border border-[#00B3B3]/30 bg-[#00B3B3]/10">
+              <Camera className="w-4 h-4 text-[#00B3B3]" />
+              <span className="text-sm text-[#00B3B3]">Creative Software</span>
             </div>
             <h1 className="text-5xl md:text-6xl mb-6 leading-tight">
               <span className="block bg-gradient-to-r from-[#00B3B3] to-[#FF6A00] bg-clip-text text-transparent">

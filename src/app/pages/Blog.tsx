@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Section } from '../components/Section';
 import { GlowCard } from '../components/Card';
 import { Link } from 'react-router';
-import { Calendar, Clock, ArrowRight, User, Search, TrendingUp, MessageCircle, Bookmark } from 'lucide-react';
+import { Calendar, Clock, ArrowRight, User, Search, TrendingUp, MessageCircle, Bookmark, PenLine, Bot, CheckCircle2 } from 'lucide-react';
 import { useState } from 'react';
 
 const allArticles = [
@@ -149,8 +149,9 @@ export function Blog() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <div className="inline-block mb-6 px-4 py-2 rounded-full border border-[#FF6A00]/30 bg-[#FF6A00]/10">
-              <span className="text-sm text-[#FF6A00]">✍️ The BUILD Blog</span>
+            <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full border border-[#FF6A00]/30 bg-[#FF6A00]/10">
+              <PenLine className="w-4 h-4 text-[#FF6A00]" />
+              <span className="text-sm text-[#FF6A00]">The BUILD Blog</span>
             </div>
             <h1 className="text-5xl md:text-7xl mb-6 leading-tight">
               <span className="block bg-gradient-to-r from-[#FF6A00] via-[#00B3B3] to-[#FF6A00] bg-clip-text text-transparent">
@@ -214,7 +215,9 @@ export function Blog() {
                 <div className="hidden lg:flex items-center justify-center">
                   <div className="relative w-64 h-64">
                     <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#FF6A00]/20 via-[#00B3B3]/20 to-[#FF6A00]/20 blur-3xl" />
-                    <div className="relative z-10 flex items-center justify-center h-full text-8xl">🤖</div>
+                    <div className="relative z-10 flex items-center justify-center h-full">
+                    <Bot className="w-24 h-24 text-[#FF6A00]" />
+                  </div>
                   </div>
                 </div>
               </div>
@@ -312,7 +315,7 @@ export function Blog() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >
-              <div className="text-6xl mb-4">🔍</div>
+              <Search className="w-16 h-16 mb-4 mx-auto text-[#F5F5F5]/40" />
               <h3 className="text-2xl text-[#F5F5F5] mb-2">No articles found</h3>
               <p className="text-[#F5F5F5]/60">Try adjusting your search or category filter.</p>
             </motion.div>
@@ -333,7 +336,7 @@ export function Blog() {
               animate={{ opacity: 1, scale: 1 }}
               className="flex items-center justify-center gap-3 text-[#00B3B3] text-xl"
             >
-              <span>🎉</span>
+              <CheckCircle2 className="w-6 h-6 text-[#00B3B3]" />
               <span>You're subscribed! Welcome to the community.</span>
             </motion.div>
           ) : (

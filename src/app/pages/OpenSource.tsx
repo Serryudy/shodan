@@ -309,9 +309,9 @@ export function OpenSource() {
                 transition={{ duration: 0.4, delay: index * 0.07 }}
                 className="bg-white/5 border border-white/10 rounded-xl p-4 text-center hover:border-[#00B3B3]/40 transition-colors"
               >
-                {index === 0 && <div className="text-lg mb-2">🥇</div>}
-                {index === 1 && <div className="text-lg mb-2">🥈</div>}
-                {index === 2 && <div className="text-lg mb-2">🥉</div>}
+                {index === 0 && <Trophy className="w-5 h-5 mb-2 mx-auto text-yellow-400" />}
+                {index === 1 && <Trophy className="w-5 h-5 mb-2 mx-auto text-slate-400" />}
+                {index === 2 && <Trophy className="w-5 h-5 mb-2 mx-auto text-amber-700" />}
                 {index > 2 && <div className="text-lg mb-2 text-[#F5F5F5]/30">#{index + 1}</div>}
                 <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${contrib.color} flex items-center justify-center text-[#0D0D0D] mx-auto mb-3 text-sm`}>
                   {contrib.name.charAt(0).toUpperCase()}

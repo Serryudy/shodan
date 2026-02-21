@@ -2,8 +2,8 @@ import { motion } from 'motion/react';
 import { Section } from '../components/Section';
 import { GlowCard } from '../components/Card';
 import { Link, useParams } from 'react-router';
-import { Calendar, Clock, ArrowLeft, User, MessageCircle, Share2, Bookmark, ArrowRight } from 'lucide-react';
-import { useState } from 'react';
+import { Calendar, Clock, ArrowLeft, User, MessageCircle, Share2, Bookmark, ArrowRight, Heart, FileQuestion, Bot, Globe, Zap, FlaskConical, Palette, Brain, Users } from 'lucide-react';
+import { useState, type ReactNode } from 'react';
 
 const articleContent: Record<string, {
   title: string;
@@ -12,7 +12,7 @@ const articleContent: Record<string, {
   date: string;
   readTime: string;
   category: string;
-  emoji: string;
+  icon: ReactNode;
   intro: string;
   sections: Array<{ heading: string; body: string }>;
   tags: string[];
@@ -26,7 +26,7 @@ const articleContent: Record<string, {
     date: 'Feb 15, 2026',
     readTime: '8 min read',
     category: 'AI',
-    emoji: '🤖',
+    icon: <Bot className="w-32 h-32 text-[#FF6A00]" />,
     intro: 'Artificial intelligence is no longer a future concept — it\'s the backbone of modern software development. In this piece, we explore what that means for the builders working on the next generation of products.',
     sections: [
       {
@@ -57,7 +57,7 @@ const articleContent: Record<string, {
     date: 'Feb 10, 2026',
     readTime: '6 min read',
     category: 'Community',
-    emoji: '🌍',
+    icon: <Globe className="w-32 h-32 text-[#00B3B3]" />,
     intro: 'We\'ve been building in public from day one. Here\'s everything we learned — the good, the brutal, and the surprisingly beautiful.',
     sections: [
       {
@@ -88,7 +88,7 @@ const articleContent: Record<string, {
     date: 'Feb 5, 2026',
     readTime: '12 min read',
     category: 'Automation',
-    emoji: '⚡',
+    icon: <Zap className="w-32 h-32 text-[#FF6A00]" />,
     intro: 'Workflow automation that actually works isn\'t magic — it\'s disciplined engineering. Here\'s everything you need to get it right the first time.',
     sections: [
       {
@@ -119,7 +119,7 @@ const articleContent: Record<string, {
     date: 'Jan 28, 2026',
     readTime: '5 min read',
     category: 'Open Source',
-    emoji: '💚',
+    icon: <Heart className="w-32 h-32 text-[#00B3B3]" />,
     intro: 'Opening our source code felt terrifying. Then it became the best business decision we ever made.',
     sections: [
       {
@@ -150,7 +150,7 @@ const articleContent: Record<string, {
     date: 'Jan 20, 2026',
     readTime: '10 min read',
     category: 'Lab',
-    emoji: '🧪',
+    icon: <FlaskConical className="w-32 h-32 text-[#FF6A00]" />,
     intro: 'Not every experiment survives. But the ones that do? They teach you everything about what builders actually need.',
     sections: [
       {
@@ -181,7 +181,7 @@ const articleContent: Record<string, {
     date: 'Jan 12, 2026',
     readTime: '7 min read',
     category: 'Design',
-    emoji: '🎨',
+    icon: <Palette className="w-32 h-32 text-[#00B3B3]" />,
     intro: 'Developer tools have a reputation for ugly. We think that\'s a choice, not an inevitability.',
     sections: [
       {
@@ -212,7 +212,7 @@ const articleContent: Record<string, {
     date: 'Jan 5, 2026',
     readTime: '15 min read',
     category: 'AI',
-    emoji: '🧠',
+    icon: <Brain className="w-32 h-32 text-[#FF6A00]" />,
     intro: 'Neural networks terrify most developers. We\'re going to fix that in the next 15 minutes.',
     sections: [
       {
@@ -243,7 +243,7 @@ const articleContent: Record<string, {
     date: 'Dec 28, 2025',
     readTime: '9 min read',
     category: 'Community',
-    emoji: '👥',
+    icon: <Users className="w-32 h-32 text-[#00B3B3]" />,
     intro: 'We have 50,000+ developers in our community. Here\'s exactly how that shapes every product decision we make.',
     sections: [
       {
@@ -306,7 +306,7 @@ export function BlogPost() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <div className="text-8xl mb-6">📄</div>
+            <FileQuestion className="w-24 h-24 text-[#FF6A00] mb-6 mx-auto" />
             <h1 className="text-4xl md:text-5xl mb-6 text-[#F5F5F5]">Article Not Found</h1>
             <p className="text-xl text-[#F5F5F5]/60 mb-8">
               This article doesn't exist yet — but we're writing it.
@@ -382,7 +382,7 @@ export function BlogPost() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    ❤️ {article.likes + (liked ? 1 : 0)}
+                    <Heart className="w-4 h-4" /> {article.likes + (liked ? 1 : 0)}
                   </motion.button>
                   <motion.button
                     onClick={() => setBookmarked(!bookmarked)}
@@ -419,7 +419,7 @@ export function BlogPost() {
               className="relative rounded-3xl overflow-hidden mb-12 p-16 flex items-center justify-center bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-[#FF6A00]/10 via-[#00B3B3]/5 to-[#FF6A00]/10" />
-              <span className="text-9xl relative z-10">{article.emoji}</span>
+              <div className="relative z-10">{article.icon}</div>
             </motion.div>
 
             {article.sections.map((section, index) => (
