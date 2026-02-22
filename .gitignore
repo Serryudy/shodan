@@ -15,6 +15,9 @@ build/
 .env.test.local
 .env.production.local
 
+# Firebase credentials (never commit)
+scripts/firebaseConfig.*
+
 # Logs
 logs/
 *.log
