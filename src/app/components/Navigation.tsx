@@ -28,7 +28,7 @@ export function Navigation() {
               transition={{ type: 'spring', stiffness: 400 }}
             >
               <span className="bg-gradient-to-r from-[#FF6A00] via-[#00B3B3] to-[#FF6A00] bg-clip-text text-transparent">
-                BUILD
+                SHODAN
               </span>
               <span className="text-[#F5F5F5]">.</span>
             </motion.div>

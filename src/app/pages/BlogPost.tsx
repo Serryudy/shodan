@@ -1,9 +1,10 @@
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Section } from '../components/Section';
 import { GlowCard } from '../components/Card';
 import { Link, useParams } from 'react-router';
-import { Calendar, Clock, ArrowLeft, User, MessageCircle, Share2, Bookmark, ArrowRight, Heart, FileQuestion, Bot, Globe, Zap, FlaskConical, Palette, Brain, Users } from 'lucide-react';
-import { useState, type ReactNode } from 'react';
+import { Calendar, Clock, ArrowLeft, User, MessageCircle, Share2, Bookmark, ArrowRight, Heart, FileQuestion, Bot, Globe, Zap, FlaskConical, Palette, Brain, Users, PenLine, X, AlertCircle, Loader2, CheckCircle2, Tag, Send, ImagePlus } from 'lucide-react';
+import { useState, useEffect, type ReactNode } from 'react';
+import { fetchPostBySlug, updatePost, deleteField, compressImageToDataUrl, type BlogPost as FbPost } from '../../lib/blogService';
 
 const articleContent: Record<string, {
   title: string;
@@ -278,6 +279,214 @@ const categoryColors: Record<string, string> = {
   Lab: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
 };
 
+const PIN_B64 = 'NDU2ODM0';
+
+const editInputCls = 'w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-[#F5F5F5] placeholder:text-[#F5F5F5]/25 focus:outline-none focus:border-[#FF6A00]/50 transition-colors text-sm';
+
+function EditField({ label, required, hint, children }: { label: string; required?: boolean; hint?: string; children: ReactNode }) {
+  return (
+    <div>
+      <label className="flex items-center gap-1 text-xs text-[#F5F5F5]/50 mb-2 uppercase tracking-widest">
+        {label}{required && <span className="text-[#FF6A00]">*</span>}
+      </label>
+      {children}
+      {hint && <p className="text-xs text-[#F5F5F5]/30 mt-1">{hint}</p>}
+    </div>
+  );
+}
+
+interface EditPostModalProps {
+  docId: string;
+  initialData: {
+    title: string; excerpt: string; author: string; role?: string;
+    category: string; tags?: string[]; intro?: string;
+    sections?: Array<{ heading: string; body: string }>;
+    content?: string; coverUrl?: string;
+  };
+  onClose: () => void;
+  onSaved: (updates: Partial<FbPost>) => void;
+}
+
+function EditPostModal({ docId, initialData, onClose, onSaved }: EditPostModalProps) {
+  type Phase = 'pin' | 'edit' | 'saving' | 'done';
+  const [phase, setPhase]       = useState<Phase>('pin');
+  const [pin, setPin]           = useState('');
+  const [pinError, setPinError] = useState('');
+  const [saveError, setSaveError] = useState('');
+  const [coverDataUrl, setCoverDataUrl] = useState(initialData.coverUrl ?? '');
+
+  const toContentString = () => {
+    if (initialData.content) return initialData.content;
+    if (initialData.sections?.length) return initialData.sections.map(s => `${s.heading}\n\n${s.body}`).join('\n\n');
+    return '';
+  };
+
+  const [form, setForm] = useState({
+    title:    initialData.title,
+    excerpt:  initialData.intro ?? initialData.excerpt,
+    author:   initialData.author,
+    role:     initialData.role ?? '',
+    category: initialData.category,
+    tags:     (initialData.tags ?? []).join(', '),
+    content:  toContentString(),
+  });
+
+  const handlePin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (btoa(pin) === PIN_B64) { setPinError(''); setPhase('edit'); }
+    else { setPinError('Incorrect PIN — try again.'); setPin(''); }
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.title || !form.author || !form.content) { setSaveError('Title, author and content are required.'); return; }
+    setPhase('saving');
+    try {
+      const updates: Partial<FbPost> = {
+        title:    form.title,
+        excerpt:  form.excerpt,
+        intro:    form.excerpt,
+        author:   form.author,
+        role:     (form.role || deleteField()) as unknown as string,
+        category: form.category,
+        tags:     form.tags.split(',').map((t: string) => t.trim()).filter(Boolean),
+        content:  form.content,
+        sections: deleteField() as unknown as undefined,
+        ...(coverDataUrl ? { coverUrl: coverDataUrl } : {}),
+      };
+      await updatePost(docId, updates);
+      onSaved(updates);
+      setPhase('done');
+      setTimeout(onClose, 1600);
+    } catch (err) { setSaveError(`Failed to save: ${(err as Error)?.message ?? 'unknown error'}`); setPhase('edit'); }
+  };
+
+  return (
+    <motion.div className="fixed inset-0 z-50 flex items-center justify-center p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+      <motion.div className="absolute inset-0 bg-[#0D0D0D]/90 backdrop-blur-md" initial={{ opacity: 0 }} animate={{ opacity: 1 }} onClick={phase !== 'saving' ? onClose : undefined} />
+      <motion.div
+        className="relative z-10 w-full max-w-2xl max-h-[92vh] overflow-y-auto bg-gradient-to-br from-white/[0.06] to-white/[0.02] border border-white/10 rounded-2xl backdrop-blur-sm"
+        style={{ boxShadow: '0 8px 48px rgba(0,0,0,0.6), 0 0 80px rgba(0,179,179,0.12)' }}
+        initial={{ opacity: 0, y: 40, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 40, scale: 0.96 }}
+        transition={{ type: 'spring', stiffness: 90, damping: 22 }}
+      >
+        {phase !== 'saving' && (
+          <button onClick={onClose} className="absolute top-5 right-5 z-20 p-2 rounded-lg bg-white/5 hover:bg-white/10 text-[#F5F5F5]/50 hover:text-[#F5F5F5] transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        )}
+        <div className="p-8 lg:p-10">
+          <AnimatePresence mode="wait">
+            {phase === 'pin' && (
+              <motion.div key="pin" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <div className="text-center mb-8">
+                  <div className="inline-flex items-center justify-center w-14 h-14 mb-5 rounded-2xl bg-gradient-to-br from-[#00B3B3]/20 to-[#FF6A00]/20 border border-white/10">
+                    <PenLine className="w-7 h-7 text-[#00B3B3]" />
+                  </div>
+                  <h2 className="text-2xl text-[#F5F5F5] mb-1">Edit Article</h2>
+                  <p className="text-sm text-[#F5F5F5]/40">Enter your PIN to unlock the editor</p>
+                </div>
+                <form onSubmit={handlePin} className="space-y-4 max-w-xs mx-auto">
+                  <input type="password" inputMode="numeric" placeholder="••••••" value={pin} onChange={e => setPin(e.target.value)}
+                    className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-xl text-[#F5F5F5] text-center text-2xl tracking-[0.5em] placeholder:tracking-widest placeholder:text-[#F5F5F5]/20 focus:outline-none focus:border-[#00B3B3]/50 transition-colors" autoFocus />
+                  {pinError && (
+                    <motion.p className="flex items-center justify-center gap-2 text-red-400 text-sm" initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}>
+                      <AlertCircle className="w-4 h-4 shrink-0" /> {pinError}
+                    </motion.p>
+                  )}
+                  <motion.button type="submit" className="w-full py-4 bg-[#00B3B3] text-[#0D0D0D] rounded-xl font-semibold text-sm hover:bg-[#00B3B3]/90 transition-colors" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}>
+                    Unlock Editor
+                  </motion.button>
+                </form>
+              </motion.div>
+            )}
+            {(phase === 'edit' || phase === 'saving') && (
+              <motion.div key="edit" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
+                <div className="flex items-center gap-3 mb-7">
+                  <span className="w-2 h-2 rounded-full bg-[#FF6A00] animate-pulse" />
+                  <h2 className="text-2xl text-[#F5F5F5]">Editing Article</h2>
+                </div>
+                <form onSubmit={handleSave} className="space-y-5">
+                  <EditField label="Title" required>
+                    <input className={editInputCls} value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} />
+                  </EditField>
+                  <div className="grid grid-cols-2 gap-4">
+                    <EditField label="Author" required>
+                      <input className={editInputCls} value={form.author} onChange={e => setForm(f => ({ ...f, author: e.target.value }))} />
+                    </EditField>
+                    <EditField label="Role">
+                      <input className={editInputCls} placeholder="Job title" value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))} />
+                    </EditField>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <EditField label="Category">
+                      <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} className={`${editInputCls} appearance-none cursor-pointer`}>
+                        {['AI', 'Automation', 'Open Source', 'Community', 'Design', 'Lab'].map(c => (
+                          <option key={c} value={c} className="bg-[#1a1a1a]">{c}</option>
+                        ))}
+                      </select>
+                    </EditField>
+                    <EditField label="Tags">
+                      <div className="relative"><Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#F5F5F5]/30" />
+                        <input className={`${editInputCls} pl-9`} placeholder="AI, Design..." value={form.tags} onChange={e => setForm(f => ({ ...f, tags: e.target.value }))} />
+                      </div>
+                    </EditField>
+                  </div>
+                  <EditField label="Excerpt / Intro" hint="Shown on listing card and article lede.">
+                    <textarea className={`${editInputCls} resize-none`} rows={3} value={form.excerpt} onChange={e => setForm(f => ({ ...f, excerpt: e.target.value }))} />
+                  </EditField>
+                  <EditField label="Article Content" required hint="Separate paragraphs or sections with a blank line.">
+                    <textarea className={`${editInputCls} resize-none font-mono leading-relaxed`} rows={12} value={form.content} onChange={e => setForm(f => ({ ...f, content: e.target.value }))} />
+                  </EditField>
+                  <EditField label="Cover Image" hint="Auto-compressed before saving. Recommended: 1200×630px, JPG or PNG">
+                    {coverDataUrl ? (
+                      <div className="relative">
+                        <img src={coverDataUrl} alt="Cover preview" className="w-full h-44 object-cover rounded-xl" />
+                        <button type="button" onClick={() => setCoverDataUrl('')}
+                          className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/60 text-white hover:bg-black/80 transition-colors">
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="flex flex-col items-center justify-center gap-2 py-8 border-2 border-dashed border-white/10 rounded-xl cursor-pointer hover:border-[#00B3B3]/40 hover:bg-white/[0.02] transition-colors">
+                        <ImagePlus className="w-8 h-8 text-[#F5F5F5]/25" />
+                        <span className="text-sm text-[#F5F5F5]/40">Click to upload a new cover image</span>
+                        <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                          const f = e.target.files?.[0];
+                          if (f) setCoverDataUrl(await compressImageToDataUrl(f));
+                        }} />
+                      </label>
+                    )}
+                  </EditField>
+                  {saveError && (
+                    <motion.p className="flex items-center gap-2 text-red-400 text-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                      <AlertCircle className="w-4 h-4 shrink-0" /> {saveError}
+                    </motion.p>
+                  )}
+                  <motion.button type="submit" disabled={phase === 'saving'}
+                    className="w-full py-4 bg-gradient-to-r from-[#FF6A00] to-[#00B3B3] text-[#0D0D0D] font-semibold rounded-xl flex items-center justify-center gap-2 disabled:opacity-50"
+                    whileHover={{ scale: phase === 'edit' ? 1.02 : 1 }} whileTap={{ scale: phase === 'edit' ? 0.97 : 1 }}>
+                    {phase === 'saving' ? <><Loader2 className="w-5 h-5 animate-spin" /> Saving...</> : <><Send className="w-5 h-5" /> Save Changes</>}
+                  </motion.button>
+                </form>
+              </motion.div>
+            )}
+            {phase === 'done' && (
+              <motion.div key="done" className="py-20 text-center" initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }}>
+                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 200, damping: 18, delay: 0.1 }}>
+                  <CheckCircle2 className="w-20 h-20 text-[#00B3B3] mx-auto mb-5" />
+                </motion.div>
+                <h3 className="text-2xl text-[#F5F5F5] mb-2">Saved!</h3>
+                <p className="text-[#F5F5F5]/50">Your changes are live.</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 const otherArticles = [
   { slug: 'future-of-ai-development', title: 'The Future of AI Development', category: 'AI' },
   { slug: 'building-in-public', title: 'Building in Public: Our Journey', category: 'Community' },
@@ -293,9 +502,128 @@ export function BlogPost() {
   const { slug } = useParams<{ slug: string }>();
   const [liked, setLiked] = useState(false);
   const [bookmarked, setBookmarked] = useState(false);
+  const [fbPost, setFbPost] = useState<FbPost | null>(null);
+  const [fbLoading, setFbLoading] = useState(true);
+  const [editorOpen, setEditorOpen] = useState(false);
+
+  useEffect(() => {
+    if (!slug) { setFbLoading(false); return; }
+    fetchPostBySlug(slug).then(setFbPost).catch(() => {}).finally(() => setFbLoading(false));
+  }, [slug]);
 
   const article = slug ? articleContent[slug] : undefined;
   const related = otherArticles.filter((a) => a.slug !== slug).slice(0, 3);
+
+  if (!article && fbLoading) {
+    return (
+      <Section className="min-h-[80vh] flex items-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-2 border-[#00B3B3]/30 border-t-[#00B3B3] rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-[#F5F5F5]/50">Loading article…</p>
+        </div>
+      </Section>
+    );
+  }
+
+  if (!article && !fbLoading && fbPost && fbPost.content) {
+    const categoryColor = categoryColors[fbPost.category] ?? 'bg-white/10 text-[#F5F5F5]/70 border-white/10';
+    return (
+      <div>
+        {fbPost.id && (
+          <>
+            <motion.button onClick={() => setEditorOpen(true)}
+              className="fixed bottom-8 right-8 z-40 flex items-center gap-2.5 px-5 py-3 bg-[#00B3B3] text-[#0D0D0D] rounded-full font-semibold text-sm shadow-[0_0_32px_rgba(0,179,179,0.45)] hover:shadow-[0_0_50px_rgba(0,179,179,0.6)] transition-shadow"
+              initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }}
+              whileHover={{ scale: 1.07 }} whileTap={{ scale: 0.94 }} title="Edit this article">
+              <PenLine className="w-4 h-4" /> Edit Article
+            </motion.button>
+            <AnimatePresence>
+              {editorOpen && (
+                <EditPostModal
+                  docId={fbPost.id}
+                  initialData={fbPost}
+                  onClose={() => setEditorOpen(false)}
+                  onSaved={(updates) => setFbPost(prev => prev ? { ...prev, ...updates } : prev)}
+                />
+              )}
+            </AnimatePresence>
+          </>
+        )}
+        <Section className="min-h-[50vh] flex items-end pb-0 relative overflow-hidden">
+          <motion.div className="absolute inset-0 opacity-10 pointer-events-none"
+            style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(255,106,0,0.5) 0%, rgba(0,179,179,0.3) 40%, transparent 70%)' }} />
+          <div className="relative z-10 w-full">
+            <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
+              <Link to="/blog" className="inline-flex items-center gap-2 text-[#F5F5F5]/60 hover:text-[#00B3B3] transition-colors mb-8 text-sm">
+                <ArrowLeft className="w-4 h-4" /> Back to Blog
+              </Link>
+              <div className="max-w-4xl">
+                <span className={`px-3 py-1 text-xs rounded-full border ${categoryColor} mb-6 inline-block`}>{fbPost.category}</span>
+                <h1 className="text-4xl md:text-6xl mb-6 leading-tight text-[#F5F5F5]">{fbPost.title}</h1>
+                <p className="text-xl text-[#F5F5F5]/60 mb-8 leading-relaxed max-w-2xl">{fbPost.intro ?? fbPost.excerpt}</p>
+                <div className="flex flex-wrap items-center gap-6 text-sm text-[#F5F5F5]/50 pb-8 border-b border-white/5">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#FF6A00] to-[#00B3B3] flex items-center justify-center text-xs text-[#0D0D0D]">{fbPost.author.charAt(0)}</div>
+                    <div>
+                      <div className="text-[#F5F5F5]">{fbPost.author}</div>
+                      {fbPost.role && <div className="text-[#F5F5F5]/40 text-xs">{fbPost.role}</div>}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1"><Calendar className="w-4 h-4" /> {fbPost.date}</div>
+                  <div className="flex items-center gap-1"><Clock className="w-4 h-4" /> {fbPost.readTime}</div>
+                  <div className="flex items-center gap-4 ml-auto">
+                    <motion.button onClick={() => setLiked(!liked)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-colors ${liked ? 'bg-[#FF6A00]/20 border-[#FF6A00]/50 text-[#FF6A00]' : 'border-white/10 text-[#F5F5F5]/50 hover:border-[#FF6A00]/30'}`}
+                      whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                      <Heart className="w-4 h-4" /> {(fbPost.likes ?? 0) + (liked ? 1 : 0)}
+                    </motion.button>
+                    <motion.button onClick={() => setBookmarked(!bookmarked)}
+                      className={`p-1.5 rounded-lg border transition-colors ${bookmarked ? 'border-[#00B3B3]/50 text-[#00B3B3]' : 'border-white/10 text-[#F5F5F5]/50 hover:border-[#00B3B3]/30'}`}
+                      whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                      <Bookmark className="w-4 h-4" />
+                    </motion.button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </Section>
+        <Section>
+          <div className="max-w-3xl mx-auto">
+            {fbPost.coverUrl && (
+              <motion.div className="relative rounded-3xl overflow-hidden mb-12 border border-white/10"
+                initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6 }}>
+                <img src={fbPost.coverUrl} alt={fbPost.title} className="w-full h-72 lg:h-96 object-cover" />
+              </motion.div>
+            )}
+            {(fbPost.content ?? '').split(/\n\n+/).map((para, i) => (
+              <motion.p key={i} className="text-[#F5F5F5]/70 leading-relaxed text-lg mb-6"
+                initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                transition={{ duration: 0.45, delay: i * 0.03 }}>
+                {para.trim()}
+              </motion.p>
+            ))}
+            {fbPost.tags && fbPost.tags.length > 0 && (
+              <div className="mt-12 pt-8 border-t border-white/5 flex flex-wrap gap-3">
+                {fbPost.tags.map(tag => <span key={tag} className="px-4 py-2 text-sm rounded-full bg-white/5 border border-white/10 text-[#F5F5F5]/70">#{tag}</span>)}
+              </div>
+            )}
+            <div className="mt-12">
+              <GlowCard>
+                <div className="flex items-start gap-6">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#FF6A00] to-[#00B3B3] flex items-center justify-center text-2xl text-[#0D0D0D] flex-shrink-0">{fbPost.author.charAt(0)}</div>
+                  <div>
+                    <h3 className="text-xl mb-1 text-[#F5F5F5]">{fbPost.author}</h3>
+                    {fbPost.role && <p className="text-[#FF6A00] text-sm mb-3">{fbPost.role}</p>}
+                  </div>
+                </div>
+              </GlowCard>
+            </div>
+          </div>
+        </Section>
+      </div>
+    );
+  }
 
   if (!article) {
     return (
@@ -328,6 +656,31 @@ export function BlogPost() {
 
   return (
     <div>
+      {fbPost?.id && (
+        <>
+          <motion.button onClick={() => setEditorOpen(true)}
+            className="fixed bottom-8 right-8 z-40 flex items-center gap-2.5 px-5 py-3 bg-[#00B3B3] text-[#0D0D0D] rounded-full font-semibold text-sm shadow-[0_0_32px_rgba(0,179,179,0.45)] hover:shadow-[0_0_50px_rgba(0,179,179,0.6)] transition-shadow"
+            initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }}
+            whileHover={{ scale: 1.07 }} whileTap={{ scale: 0.94 }} title="Edit this article">
+            <PenLine className="w-4 h-4" /> Edit Article
+          </motion.button>
+          <AnimatePresence>
+            {editorOpen && (
+              <EditPostModal
+                docId={fbPost.id}
+                initialData={{
+                  title: article.title, excerpt: article.intro, author: article.author,
+                  role: article.role, category: article.category, tags: article.tags,
+                  intro: article.intro, sections: article.sections,
+                  coverUrl: fbPost?.coverUrl,
+                }}
+                onClose={() => setEditorOpen(false)}
+                onSaved={(updates) => setFbPost(prev => prev ? { ...prev, ...updates } : prev)}
+              />
+            )}
+          </AnimatePresence>
+        </>
+      )}
       {/* Hero */}
       <Section className="min-h-[50vh] flex items-end pb-0 relative overflow-hidden">
         <motion.div
@@ -411,15 +764,21 @@ export function BlogPost() {
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-16 max-w-6xl mx-auto">
           {/* Main Content */}
           <div>
-            {/* Featured Emoji */}
+            {/* Cover Image / Featured Icon */}
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
-              className="relative rounded-3xl overflow-hidden mb-12 p-16 flex items-center justify-center bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10"
+              className="relative rounded-3xl overflow-hidden mb-12 bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-[#FF6A00]/10 via-[#00B3B3]/5 to-[#FF6A00]/10" />
-              <div className="relative z-10">{article.icon}</div>
+              {fbPost?.coverUrl ? (
+                <img src={fbPost.coverUrl} alt={article.title} className="w-full h-72 lg:h-96 object-cover" />
+              ) : (
+                <>
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#FF6A00]/10 via-[#00B3B3]/5 to-[#FF6A00]/10" />
+                  <div className="relative z-10 p-16 flex items-center justify-center">{article.icon}</div>
+                </>
+              )}
             </motion.div>
 
             {article.sections.map((section, index) => (

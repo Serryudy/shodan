@@ -107,8 +107,8 @@ export function Contact() {
                 </div>
                 <div>
                   <h3 className="text-base font-medium mb-1 text-[#F5F5F5]">Email</h3>
-                  <a href="mailto:hello@build.dev" className="text-[#F5F5F5]/60 hover:text-[#00B3B3] transition-colors">
-                    hello@build.dev
+                  <a href="mailto:hello@shodan.dev" className="text-[#F5F5F5]/60 hover:text-[#00B3B3] transition-colors">
+                    hello@shodan.dev
                   </a>
                 </div>
               </div>

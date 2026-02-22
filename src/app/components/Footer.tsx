@@ -39,13 +39,13 @@ export function Footer() {
             <Link to="/" className="inline-block mb-4">
               <div className="text-2xl tracking-tight">
                 <span className="bg-gradient-to-r from-[#FF6A00] via-[#00B3B3] to-[#FF6A00] bg-clip-text text-transparent">
-                  BUILD
+                  SHODAN
                 </span>
                 <span className="text-[#F5F5F5]">.</span>
               </div>
             </Link>
             <p className="text-[#F5F5F5]/60 mb-6 max-w-sm">
-              Building futuristic AI and software solutions that empower creators, developers, and innovators.
+              Futuristic AI-powered software, camera technology, and open-source platforms empowering creators and developers who dare to innovate.
             </p>
             <div className="flex gap-4">
               {socialLinks.map((social) => (
@@ -84,7 +84,7 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-[#F5F5F5]/40 text-sm">
-            © 2026 BUILD. All rights reserved.
+            © 2026 Shodan. All rights reserved.
           </p>
           <div className="flex gap-6 text-sm">
             <a href="#" className="text-[#F5F5F5]/40 hover:text-[#F5F5F5] transition-colors">

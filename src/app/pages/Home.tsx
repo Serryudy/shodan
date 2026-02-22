@@ -32,6 +32,9 @@ const HEADLINE_LINE: { text: string; gradient?: boolean }[] = [
   { text: 'Matters.', gradient: true },
 ];
 
+// Page title
+const PAGE_TITLE = 'Shodan — Build What Matters';
+
 function HeroWord({
   text,
   gradient,

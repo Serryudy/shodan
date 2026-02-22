@@ -29,7 +29,7 @@ export function About() {
       color: 'from-[#00B3B3] to-[#FF6A00]',
       bio: 'Co-founder and engineer building the core architecture and intelligent systems behind our products.',
       linkedin: 'https://www.linkedin.com/in/nimeshmadhusankaka/',
-      photo: '/team/nimesh.jpg',
+      photo: '/team/nimesh.png',
     },
     {
       name: 'Avishka Vishmitha',
@@ -263,11 +263,11 @@ export function About() {
             <a href={member.linkedin} target="_blank" rel="noopener noreferrer" className="block h-full">
             <GlowCard className="text-center group h-full cursor-pointer">
                 <div className="flex justify-center mb-5">
-                  <div className={`w-20 h-20 rounded-2xl overflow-hidden group-hover:scale-105 transition-transform bg-gradient-to-br ${member.color}`}>
+                  <div className={`w-24 h-24 rounded-3xl overflow-hidden group-hover:scale-105 transition-transform bg-gradient-to-br ${member.color} ring-2 ring-white/10`}>
                     <img
                       src={member.photo}
                       alt={member.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover rounded-3xl"
                       onError={(e) => {
                         const img = e.currentTarget;
                         img.style.display = 'none';
